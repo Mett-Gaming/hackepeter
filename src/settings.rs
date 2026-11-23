@@ -1,4 +1,4 @@
-//! Einstellungen des Spiels in %APPDATA%\hackepeter\settings.txt (Datei: mettgine::settings).
+//! Einstellungen des Spiels in %APPDATA%\.mettlauncher\hackepeter\settings.txt (Datei: mettgine::settings).
 
 use mettgine::settings::{self, KeyValues};
 

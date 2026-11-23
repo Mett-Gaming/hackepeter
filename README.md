@@ -43,5 +43,5 @@ Controller: A springen, B rutschen, X/Y/RB Fähigkeiten, Steuerkreuz oder Stick 
   blender -b -P tools/prepare_assets.py
   blender -b -P tools/prepare_people.py
   ```
-- Einstellungen und Logs: `%APPDATA%\hackepeter`.
+- Einstellungen und Logs: `%APPDATA%\.mettlauncher\hackepeter`.
 - Arbeitsregeln für Agenten: [AGENTS.md](AGENTS.md).

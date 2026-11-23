@@ -53,8 +53,8 @@ STEUERUNG
   Controller werden unterstützt (A springen, B rutschen, X/Y/RB Fähigkeiten).
 
 EINSTELLUNGEN UND SPIELSTÄNDE
-  Liegen in %APPDATA%\hackepeter (nicht neben der exe).
-  Absturzberichte: %APPDATA%\hackepeter\logs
+  Liegen in %APPDATA%\.mettlauncher\hackepeter (nicht neben der exe).
+  Absturzberichte: %APPDATA%\.mettlauncher\hackepeter\logs
 
 CREDITS
   Modelle von Quaternius, Kenney, Kay Lousberg, Poly by Google und Gambsmoore,
