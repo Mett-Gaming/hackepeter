@@ -15,6 +15,7 @@ use mettgine::crash;
 use mettgine::input::Input;
 use mettgine::net::mett::{Launch, MettTransport};
 use mettgine::net::udp::UdpTransport;
+use mettgine::presence::{Presence, Status};
 use mettgine::render::{FrameInput, Renderer, UI_HEIGHT};
 use std::collections::HashMap;
 use winit::window::{Fullscreen, Window};
@@ -51,6 +52,7 @@ pub struct App {
     last_countdown: i32,
     pub quit: bool,
     crash_ctx_t: f32,
+    presence: Presence,
     /// Kurztest (HACKEPETER_SMOKE=Sekunden): direkt eine Einzelspieler-Runde, dann beenden
     smoke: Option<f32>,
     frames: u32,
@@ -98,6 +100,7 @@ impl App {
             last_countdown: 99,
             quit: false,
             crash_ctx_t: 0.0,
+            presence: Presence::from_launcher(),
             smoke: std::env::var("HACKEPETER_SMOKE")
                 .ok()
                 .and_then(|s| s.parse().ok()),
@@ -468,12 +471,37 @@ impl App {
         }
     }
 
+    /// Was der Launcher in Discord zeigt (oeffentlich, keine Namen und keine Codes).
+    fn status(&self) -> Status {
+        let Some(s) = &self.session else {
+            return Status::new("Im Menü", "");
+        };
+        let details = match (self.screen, &s.round) {
+            (Screen::Playing | Screen::Paused, Some(r)) => {
+                match r.player(s.my_id).map(|p| p.role) {
+                    Some(crate::game::Role::Thief) => "Auf der Flucht als Dieb",
+                    Some(crate::game::Role::Cop) => "Jagt den Dieb fürs Ordnungsamt",
+                    None => "Schaut zu",
+                }
+            }
+            _ => "In der Lobby",
+        };
+        let humans = s.humans();
+        if humans > 1 || s.code.is_some() {
+            Status::new(details, "Mit Freunden").party(humans.max(1), crate::game::MAX_PLAYERS)
+        } else {
+            Status::new(details, "Solo")
+        }
+    }
+
     fn update_crash_context(&mut self, dt: f32) {
         self.crash_ctx_t -= dt;
         if self.crash_ctx_t > 0.0 {
             return;
         }
         self.crash_ctx_t = 1.0;
+        let status = self.status();
+        self.presence.set(status);
         crash::context("Bildschirm", format!("{:?}", self.screen));
         if let Some(s) = &self.session {
             crash::context("Spieler", s.members.len().to_string());
