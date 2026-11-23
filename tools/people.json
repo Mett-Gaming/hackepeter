@@ -1,0 +1,38 @@
+{
+  "_info": "Diebe und Ordnungsamt aus Quaternius Ultimate Modular Men/Women (CC0). Jede Variante mischt Kopf, Oberteil, Hose und Schuhe aus Outfits desselben Geschlechts; das Ordnungsamt traegt eine umgefaerbte Dienstkleidung (Dunkelblau mit Warngelb).",
+  "outfits": {
+    "m": {
+      "hoodie": "Hoodie_Character_gKLBoRsyKe.glb",
+      "casual": "Casual_Character_kZ3DmIoGip.glb",
+      "beach": "Beach_Character_DojKLcO34E.glb",
+      "business": "Business_Man_JFrLIKqvCH.glb",
+      "worker": "Worker_Yg2bQZO6Hj.glb",
+      "punk": "Punk_BTALZymknF.glb",
+      "hiker": "Adventurer_5EGWBMpuXq.glb"
+    },
+    "f": {
+      "casual": "Animated_Woman_qJ2gsTUBHL.glb",
+      "suit": "Suit_sOUciDsoVV.glb",
+      "punk": "Punk_djXoqejw6w.glb",
+      "worker": "Worker_E8079Ahx7k.glb",
+      "explorer": "Adventurer_ZwF0K7WBmu.glb"
+    }
+  },
+  "variants": [
+    {"id": "t_m_hoodie", "g": "m", "role": "thief", "head": "hoodie", "body": "hoodie", "legs": "hoodie", "feet": "hoodie"},
+    {"id": "t_m_punk",   "g": "m", "role": "thief", "head": "punk",   "body": "punk",   "legs": "punk",   "feet": "punk"},
+    {"id": "t_m_beach",  "g": "m", "role": "thief", "head": "beach",  "body": "beach",  "legs": "casual", "feet": "beach"},
+    {"id": "t_f_punk",   "g": "f", "role": "thief", "head": "punk",   "body": "punk",   "legs": "punk",   "feet": "punk"},
+    {"id": "t_f_casual", "g": "f", "role": "thief", "head": "casual", "body": "casual", "legs": "casual", "feet": "casual"},
+    {"id": "o_m_worker", "g": "m", "role": "cop", "head": "hiker", "body": "worker", "legs": "worker", "feet": "worker",
+     "uniform": {"body": [0.10, 0.14, 0.32], "accent": [0.96, 0.86, 0.12], "legs": [0.08, 0.10, 0.22], "feet": [0.06, 0.06, 0.07]}},
+    {"id": "o_m_jacket", "g": "m", "role": "cop", "head": "business", "body": "business", "legs": "business", "feet": "business",
+     "uniform": {"body": [0.10, 0.14, 0.32], "accent": [0.96, 0.86, 0.12], "legs": [0.08, 0.10, 0.22], "feet": [0.06, 0.06, 0.07]}},
+    {"id": "o_m_casual", "g": "m", "role": "cop", "head": "casual", "body": "casual", "legs": "business", "feet": "hiker",
+     "uniform": {"body": [0.96, 0.86, 0.12], "legs": [0.08, 0.10, 0.22], "feet": [0.06, 0.06, 0.07]}},
+    {"id": "o_f_worker", "g": "f", "role": "cop", "head": "explorer", "body": "worker", "legs": "suit", "feet": "worker",
+     "uniform": {"body": [0.10, 0.14, 0.32], "accent": [0.96, 0.86, 0.12], "legs": [0.08, 0.10, 0.22], "feet": [0.06, 0.06, 0.07]}},
+    {"id": "o_f_suit",   "g": "f", "role": "cop", "head": "suit", "body": "suit", "legs": "suit", "feet": "casual",
+     "uniform": {"body": [0.10, 0.14, 0.32], "accent": [0.96, 0.86, 0.12], "legs": [0.08, 0.10, 0.22], "feet": [0.06, 0.06, 0.07]}}
+  ]
+}

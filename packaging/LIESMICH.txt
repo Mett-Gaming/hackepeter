@@ -1,0 +1,61 @@
+HACKEPETER - Die Mettbrötchen-Flucht
+====================================
+Einer hat das letzte Mettbrötchen geklaut und rennt. Der Rest ist das Ordnungsamt
+und will es zurück. Endlos-Runner auf drei Spuren für 1 bis 8 Leute.
+
+STARTEN
+  HACKEPETER.exe doppelklicken. Keine Installation nötig.
+  Voraussetzungen: Windows 10/11 (64 Bit) und eine Grafikkarte mit Vulkan-Treiber
+  (jede halbwegs aktuelle NVIDIA-, AMD- oder Intel-Grafik mit aktuellem Treiber).
+  Windows SmartScreen warnt eventuell, weil die Datei nicht signiert ist:
+  "Weitere Informationen" -> "Trotzdem ausführen".
+
+ALLEIN ODER MIT FREUNDEN
+  Allein spielst du gegen Bots. Die Rollen wechseln jede Runde.
+  Mit Freunden geht es über den Mett Launcher: bei HACKEPETER auf
+  "Mit Freunden spielen", hosten und den Code weitergeben oder mit Code beitreten.
+  Freie Plätze füllen Bots auf (Anzahl im Menü einstellbar).
+
+DER DIEB
+  Renn 120 Sekunden lang, ohne dass dich ein Cop erwischt.
+  Hindernisse: Absperrungen überspringen, unter Balken durchrutschen, Zügen und
+  Autos ausweichen. Über Rampen kommst du auf die Zugdächer und von dort auf
+  Brücken. Unter Brücken kannst du auch einfach durchlaufen.
+  Ein Rempler oder Crash bringt dich ins Stolpern, und die Cops holen auf.
+  Sammle Zwiebelringe (Punkte). Power-ups stehen auf leuchtenden gelben Sockeln:
+    Senf-Turbo         kurz schneller
+    Zwiebelmagnet      zieht Ringe an
+    Brötchen-Schild    fängt einen Crash ab
+    Pfeffer-Rakete     fliegt dich über alles hinweg, oben warten Ringe
+    Sprungfedern       viel höher springen, direkt auf Zugdächer
+    Mett-Stern         doppelte Punkte für Ringe
+
+DAS ORDNUNGSAMT (COPS)
+  Ihr lauft hinter dem Dieb her und seid etwas schneller. Wer crasht, fällt zurück.
+  Kommt einer auf gut einen Meter heran, ist der Dieb gefangen.
+  Drei Fähigkeiten mit Abklingzeit:
+    1 / Q   Absperrband: sperrt eine Spur vor dem Dieb
+    2 / E   Dackel: rennt zum Dieb, der muss drüberspringen
+    3 / R   Trillerpfeife: kurzer Sprint für dich
+  Nach jedem Band oder Dackel hat das ganze Team kurz Funkpause.
+
+PUNKTE
+  Dieb: 1 Punkt je überlebte Sekunde, 1 Punkt je 5 Ringe, 50 extra für die Flucht.
+  Cops: 100 für den Fang, 30 für alle anderen Cops, wenn gefangen wurde.
+
+STEUERUNG
+  A/D oder Pfeile links/rechts   Spur wechseln
+  W, Pfeil hoch oder Leertaste   Springen
+  S, Pfeil runter, Strg, Shift   Rutschen (in der Luft: schnell runter)
+  1/2/3 oder Q/E/R               Fähigkeiten (Cops)
+  Esc                            Pause / zurück
+  F11                            Vollbild
+  Controller werden unterstützt (A springen, B rutschen, X/Y/RB Fähigkeiten).
+
+EINSTELLUNGEN UND SPIELSTÄNDE
+  Liegen in %APPDATA%\hackepeter (nicht neben der exe).
+  Absturzberichte: %APPDATA%\hackepeter\logs
+
+CREDITS
+  Modelle von Quaternius, Kenney, Kay Lousberg, Poly by Google und Gambsmoore,
+  Details und Lizenzen in Credits.md. Schrift: Archivo Black (Lizenzen\).
