@@ -60,3 +60,6 @@ Diese Modelle stehen unter [CC-BY 3.0](https://creativecommons.org/licenses/by/3
 
 ## Werkzeuge und Bibliotheken
 Konvertierung mit Blender (headless). Rust-Bibliotheken: ash (Vulkan), winit, naga, glam, ab_glyph, rodio, gilrs, iroh (über mett-net) und weitere, siehe `Cargo.lock`.
+
+## Startbild der Engine
+„Gemacht mit Mettgine“: Schriftzug in Archivo Black (OFL), Mettbrötchen eigene Zeichnung, Dino aus dem Logo des Mett Launchers (Herkunft und Lizenz des Fotos noch nicht belegt).

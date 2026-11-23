@@ -298,6 +298,18 @@ impl App {
 
     /// Ein Bild: Eingabe, Spiel, Klang, Zeichnen.
     pub fn frame(&mut self, dt: f32) {
+        // Startbild der Engine: Eingaben verfallen, die Verbindung laeuft weiter
+        if self
+            .running
+            .as_ref()
+            .is_some_and(|r| r.renderer.splash_active())
+        {
+            self.input.release_all();
+            self.clicked = false;
+            self.update_session(dt);
+            self.render(dt);
+            return;
+        }
         self.time += dt;
         if self.input.pressed(k::FULLSCREEN) {
             self.settings.fullscreen = !self.settings.fullscreen;
