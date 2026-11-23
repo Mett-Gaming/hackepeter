@@ -8,7 +8,7 @@ use crate::game::{lane_x, Role, LANE_W, START_GAP};
 use crate::people::{anims, is_female, run_stride, Clip};
 use glam::{Mat4, Quat, Vec3, Vec4};
 use mettgine::anim::{Animator, PoseFx};
-use mettgine::scene::{perspective, MeshDraw, SceneParams, SkinDraw};
+use mettgine::render::{perspective, Clean, Lighting, MeshDraw, Post, SkinDraw, Sun, View};
 use std::collections::HashMap;
 
 /// Sichtweite nach vorn und hinten (Meter)
@@ -467,6 +467,7 @@ impl Animators {
             } else {
                 0.0
             },
+            ..Default::default()
         });
         // Pfeffer-Rakete auf dem Ruecken, mit Flamme
         if p.rocket > 0.0 {
@@ -523,14 +524,18 @@ pub fn build(round: &Round, me: u16, anims: &mut Animators, time: f32, dt: f32) 
     (f, focus)
 }
 
+/// Kamera, Licht und Nachbearbeitung eines Bildes.
+pub struct Look {
+    pub view: View,
+    pub lighting: Lighting,
+    pub post: Post,
+}
+
 /// Licht und Himmel: sonniger Nachmittag in der Stadt.
-pub fn params(cam: &Camera, aspect: f32, focus: Vec3, time: f32, shadows: bool) -> SceneParams {
-    SceneParams {
-        view_proj: cam.view_proj(aspect),
-        cam_pos: cam.eye,
-        time,
-        sun_dir: Vec3::new(0.45, 0.85, -0.3),
-        sun_color: Vec3::new(1.15, 1.02, 0.85),
+pub fn look(cam: &Camera, aspect: f32, focus: Vec3, shadows: bool) -> Look {
+    let sun = Sun {
+        dir: Vec3::new(0.45, 0.85, -0.3),
+        color: Vec3::new(1.15, 1.02, 0.85),
         shadow_center: focus + Vec3::new(0.0, 0.0, 14.0),
         shadow_radius: 32.0,
         shadow_strength: if shadows { 0.7 } else { 0.0 },
@@ -539,8 +544,17 @@ pub fn params(cam: &Camera, aspect: f32, focus: Vec3, time: f32, shadows: bool) 
         horizon: Vec3::new(1.0, 0.86, 0.74),
         fog_density: 0.0035,
         ground: Vec3::new(0.7, 0.55, 0.5),
-        fade: 0.0,
-        red: 0.0,
-        saturation: 1.4,
+    };
+    Look {
+        view: View {
+            view_proj: cam.view_proj(aspect),
+            pos: cam.eye,
+        },
+        lighting: Lighting::Sun(sun),
+        post: Post::Clean(Clean {
+            fade: 0.0,
+            red: 0.0,
+            saturation: 1.4,
+        }),
     }
 }

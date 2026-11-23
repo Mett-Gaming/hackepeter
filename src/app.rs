@@ -15,14 +15,14 @@ use mettgine::crash;
 use mettgine::input::Input;
 use mettgine::net::mett::{Launch, MettTransport};
 use mettgine::net::udp::UdpTransport;
-use mettgine::scene::{SceneRenderer, UI_HEIGHT};
+use mettgine::render::{FrameInput, Renderer, UI_HEIGHT};
 use std::collections::HashMap;
 use winit::window::{Fullscreen, Window};
 
 /// Fenster und Renderer (erst nach `resumed` vorhanden).
 pub struct Running {
     pub window: Window,
-    pub renderer: SceneRenderer,
+    pub renderer: Renderer,
 }
 
 pub struct App {
@@ -498,13 +498,13 @@ impl App {
         };
         let (frame, focus) = scene::build(round, me, &mut self.anims, self.time, dt);
         self.cam.follow(focus, dt);
-        let params = scene::params(&self.cam, aspect, focus, self.time, self.settings.shadows);
+        let look = scene::look(&self.cam, aspect, focus, self.settings.shadows);
         let c = &mut self.canvas;
         self.item_rects.clear();
         match self.screen {
             Screen::Playing => {
                 if let Some(s) = &self.session {
-                    crate::hud::ingame(c, s, &params.view_proj, self.input.using_pad);
+                    crate::hud::ingame(c, s, &look.view.view_proj, self.input.using_pad);
                 }
             }
             Screen::Lobby => {
@@ -532,19 +532,25 @@ impl App {
                 };
                 if screen == Screen::Paused {
                     if let Some(s) = &self.session {
-                        crate::hud::ingame(c, s, &params.view_proj, self.input.using_pad);
+                        crate::hud::ingame(c, s, &look.view.view_proj, self.input.using_pad);
                     }
                 }
                 self.item_rects = crate::hud::menu(c, &names, self.sel, &footer);
             }
         }
-        if let Err(e) = run.renderer.draw(
-            &params,
-            &frame.meshes,
-            &frame.skins,
-            &frame.bones,
-            &self.canvas.verts,
-        ) {
+        if let Err(e) = run.renderer.draw(&FrameInput {
+            view: look.view,
+            second_camera: None,
+            time: self.time,
+            lighting: look.lighting,
+            post: look.post,
+            meshes: &frame.meshes,
+            ghosts: &[],
+            skins: &frame.skins,
+            camera_skins: &[],
+            bones: &frame.bones,
+            ui: &self.canvas.verts,
+        }) {
             crash::fatal(
                 "Zeichnen",
                 &format!("Bild konnte nicht gezeichnet werden: {e}"),

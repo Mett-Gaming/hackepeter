@@ -20,6 +20,7 @@ mod sounds;
 
 use app::{App, Running};
 use mettgine::canvas::Canvas;
+use mettgine::render::{Config, Resolution};
 use mettgine::text::FontAtlas;
 use mettgine::{crash, crash_window};
 use std::time::Instant;
@@ -65,13 +66,11 @@ impl ApplicationHandler for Handler {
         let meshes = assets::load_all();
         let skins = people::load_skins();
         let f = &self.app.canvas.font;
-        let renderer = match mettgine::scene::SceneRenderer::new(
-            &window,
-            &meshes,
-            &skins,
-            (&f.pixels, f.width, f.height),
-            self.app.settings.render_scale,
-        ) {
+        let config = Config {
+            resolution: Resolution::Scale(self.app.settings.render_scale),
+            ..Config::new(&meshes, &skins, (&f.pixels, f.width, f.height))
+        };
+        let renderer = match mettgine::render::Renderer::new(&window, &config) {
             Ok(r) => r,
             Err(e) => {
                 crash::fatal(
@@ -104,7 +103,8 @@ impl ApplicationHandler for Handler {
                 if let Some(r) = &self.app.running {
                     let s = r.window.inner_size();
                     let x = position.x as f32 / s.width.max(1) as f32 * r.renderer.ui_width();
-                    let y = position.y as f32 / s.height.max(1) as f32 * mettgine::scene::UI_HEIGHT;
+                    let y =
+                        position.y as f32 / s.height.max(1) as f32 * mettgine::render::UI_HEIGHT;
                     self.app.mouse = (x, y);
                 }
             }
