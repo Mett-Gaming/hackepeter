@@ -515,6 +515,7 @@ impl App {
             camera_skins: &[],
             bones: &frame.bones,
             ui: &self.canvas.verts,
+            ..Default::default()
         });
     }
 
