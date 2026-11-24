@@ -1,8 +1,9 @@
 //! Figuren des Spiels (Diebe und Ordnungsamt) und ihre Animationen.
 //! Erzeugt von tools/prepare_people.py (Quaternius, CC0); Formate und Abspielen: Mettgine.
 
-use mettgine::anim::{parse_anim, AnimSet, ClipId};
-use mettgine::gpu::{parse_skin, SkinData};
+use mettgine::anim::{AnimSet, ClipId};
+use mettgine::asset::data;
+use mettgine::gpu::SkinData;
 use std::sync::OnceLock;
 
 /// Animationen (Reihenfolge wie CLIPS in tools/prepare_people.py).
@@ -91,72 +92,19 @@ pub enum Look {
     Cop,
 }
 
-/// Varianten (Reihenfolge = tools/people.json): (Name, weiblich, Rolle, Datei)
-pub static PEOPLE: &[(&str, bool, Look, &[u8])] = &[
-    (
-        "t_m_hoodie",
-        false,
-        Look::Thief,
-        include_bytes!("../assets/people/t_m_hoodie.k0s"),
-    ),
-    (
-        "t_m_punk",
-        false,
-        Look::Thief,
-        include_bytes!("../assets/people/t_m_punk.k0s"),
-    ),
-    (
-        "t_m_beach",
-        false,
-        Look::Thief,
-        include_bytes!("../assets/people/t_m_beach.k0s"),
-    ),
-    (
-        "t_f_punk",
-        true,
-        Look::Thief,
-        include_bytes!("../assets/people/t_f_punk.k0s"),
-    ),
-    (
-        "t_f_casual",
-        true,
-        Look::Thief,
-        include_bytes!("../assets/people/t_f_casual.k0s"),
-    ),
-    (
-        "o_m_worker",
-        false,
-        Look::Cop,
-        include_bytes!("../assets/people/o_m_worker.k0s"),
-    ),
-    (
-        "o_m_jacket",
-        false,
-        Look::Cop,
-        include_bytes!("../assets/people/o_m_jacket.k0s"),
-    ),
-    (
-        "o_m_casual",
-        false,
-        Look::Cop,
-        include_bytes!("../assets/people/o_m_casual.k0s"),
-    ),
-    (
-        "o_f_worker",
-        true,
-        Look::Cop,
-        include_bytes!("../assets/people/o_f_worker.k0s"),
-    ),
-    (
-        "o_f_suit",
-        true,
-        Look::Cop,
-        include_bytes!("../assets/people/o_f_suit.k0s"),
-    ),
+/// Varianten (Reihenfolge = tools/people.json): (Name, weiblich, Rolle); Figur in `people/<Name>.k0s`
+pub static PEOPLE: &[(&str, bool, Look)] = &[
+    ("t_m_hoodie", false, Look::Thief),
+    ("t_m_punk", false, Look::Thief),
+    ("t_m_beach", false, Look::Thief),
+    ("t_f_punk", true, Look::Thief),
+    ("t_f_casual", true, Look::Thief),
+    ("o_m_worker", false, Look::Cop),
+    ("o_m_jacket", false, Look::Cop),
+    ("o_m_casual", false, Look::Cop),
+    ("o_f_worker", true, Look::Cop),
+    ("o_f_suit", true, Look::Cop),
 ];
-
-static ANIM_M: &[u8] = include_bytes!("../assets/people/anim_m.k0a");
-static ANIM_F: &[u8] = include_bytes!("../assets/people/anim_f.k0a");
 
 /// Indizes der Varianten einer Rolle.
 pub fn variants(look: Look) -> Vec<usize> {
@@ -178,17 +126,18 @@ pub fn anims(female: bool) -> &'static AnimSet {
     static M: OnceLock<AnimSet> = OnceLock::new();
     static F: OnceLock<AnimSet> = OnceLock::new();
     if female {
-        F.get_or_init(|| parse_anim(ANIM_F).expect("eingebaute Animation defekt"))
+        F.get_or_init(|| data::load("people/anim_f.k0a"))
     } else {
-        M.get_or_init(|| parse_anim(ANIM_M).expect("eingebaute Animation defekt"))
+        M.get_or_init(|| data::load("people/anim_m.k0a"))
     }
 }
 
-/// Alle Figuren, Index = Variante.
+/// Alle Figuren, Index = Variante. Laedt auch die Animationen, damit es spaeter nicht ruckelt.
 pub fn load_skins() -> Vec<SkinData> {
+    let _ = (anims(false), anims(true));
     PEOPLE
         .iter()
-        .map(|p| parse_skin(p.3).expect("eingebaute Figur defekt"))
+        .map(|p| data::load(&format!("people/{}.k0s", p.0)))
         .collect()
 }
 

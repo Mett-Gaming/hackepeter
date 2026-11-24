@@ -1,0 +1,19 @@
+# Was ausgeliefert wird. Packen: cargo run --release -p mettpack -- packen
+# Anleitung: mettgine/docs/pakete.md
+name = "HACKEPETER"
+package = "hackepeter"
+exe = "HACKEPETER.exe"
+ausgelassen = ["fonts/OFL.txt"]
+
+[daten]
+figuren = ["people/*"]
+modelle = ["props/*"]
+schriften = ["fonts/*.ttf"]
+
+[schriften]
+"fonts/ArchivoBlack-Regular.ttf" = "Lizenzen/ArchivoBlack-OFL.txt"
+
+[beilagen]
+"LIESMICH.txt" = "packaging/LIESMICH.txt"
+"Credits.md" = "CREDITS.md"
+"Lizenzen/ArchivoBlack-OFL.txt" = "assets/fonts/OFL.txt"

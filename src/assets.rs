@@ -1,8 +1,9 @@
-//! Modelle des Spiels (.k0m, erzeugt von tools/prepare_assets.py), fest in die exe gebaut.
+//! Modelle des Spiels (.k0m, erzeugt von tools/prepare_assets.py), in den Spieldaten.
 //! Index 0 und 1 sind Boxen aus dem Code (Wuerfel, Keil fuer Rampen).
 
 use glam::Vec3;
-use mettgine::gpu::{parse_mesh, MeshData, MeshVertex};
+use mettgine::asset::data;
+use mettgine::gpu::{MeshData, MeshVertex};
 use std::sync::OnceLock;
 
 /// Reihenfolge = JOBS in tools/prepare_assets.py (ab Index 2).
@@ -46,46 +47,42 @@ pub enum MeshId {
 
 pub const MESH_COUNT: usize = MeshId::Star as usize + 1;
 
-const SOURCES: [&[u8]; MESH_COUNT - 2] = [
-    include_bytes!("../assets/props/train_carriage.k0m"),
-    include_bytes!("../assets/props/train_front.k0m"),
-    include_bytes!("../assets/props/train_highspeed.k0m"),
-    include_bytes!("../assets/props/train_container.k0m"),
-    include_bytes!("../assets/props/truck.k0m"),
-    include_bytes!("../assets/props/van.k0m"),
-    include_bytes!("../assets/props/police_car.k0m"),
-    include_bytes!("../assets/props/traffic_barrier.k0m"),
-    include_bytes!("../assets/props/barrier_large.k0m"),
-    include_bytes!("../assets/props/construction_barrier.k0m"),
-    include_bytes!("../assets/props/cone.k0m"),
-    include_bytes!("../assets/props/street_light.k0m"),
-    include_bytes!("../assets/props/hydrant.k0m"),
-    include_bytes!("../assets/props/bench.k0m"),
-    include_bytes!("../assets/props/trashcan.k0m"),
-    include_bytes!("../assets/props/building_a.k0m"),
-    include_bytes!("../assets/props/building_b.k0m"),
-    include_bytes!("../assets/props/town_house.k0m"),
-    include_bytes!("../assets/props/market_stand.k0m"),
-    include_bytes!("../assets/props/traffic_light.k0m"),
-    include_bytes!("../assets/props/dog.k0m"),
-    include_bytes!("../assets/props/onion_rings.k0m"),
-    include_bytes!("../assets/props/mustard.k0m"),
-    include_bytes!("../assets/props/magnet.k0m"),
-    include_bytes!("../assets/props/sandwich.k0m"),
-    include_bytes!("../assets/props/bread.k0m"),
-    include_bytes!("../assets/props/rocket.k0m"),
-    include_bytes!("../assets/props/spring.k0m"),
-    include_bytes!("../assets/props/star.k0m"),
+const SOURCES: [&str; MESH_COUNT - 2] = [
+    "props/train_carriage.k0m",
+    "props/train_front.k0m",
+    "props/train_highspeed.k0m",
+    "props/train_container.k0m",
+    "props/truck.k0m",
+    "props/van.k0m",
+    "props/police_car.k0m",
+    "props/traffic_barrier.k0m",
+    "props/barrier_large.k0m",
+    "props/construction_barrier.k0m",
+    "props/cone.k0m",
+    "props/street_light.k0m",
+    "props/hydrant.k0m",
+    "props/bench.k0m",
+    "props/trashcan.k0m",
+    "props/building_a.k0m",
+    "props/building_b.k0m",
+    "props/town_house.k0m",
+    "props/market_stand.k0m",
+    "props/traffic_light.k0m",
+    "props/dog.k0m",
+    "props/onion_rings.k0m",
+    "props/mustard.k0m",
+    "props/magnet.k0m",
+    "props/sandwich.k0m",
+    "props/bread.k0m",
+    "props/rocket.k0m",
+    "props/spring.k0m",
+    "props/star.k0m",
 ];
 
-/// Alle Modelle, Index = MeshId. Die Dateien sind fest eingebaut; ein Fehler ist ein Baufehler.
+/// Alle Modelle, Index = MeshId.
 pub fn load_all() -> Vec<MeshData> {
     let mut v = vec![cube(), wedge()];
-    v.extend(
-        SOURCES
-            .iter()
-            .map(|b| parse_mesh(b).expect("eingebautes Modell defekt")),
-    );
+    v.extend(SOURCES.iter().map(|n| data::load::<MeshData>(n)));
     v
 }
 

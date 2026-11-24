@@ -5,9 +5,9 @@ edition = "2021"
 description = "HACKEPETER - Die Mettbroetchen-Flucht: Endless-Runner, Dieb gegen Ordnungsamt (bis 8 Spieler)"
 
 [workspace]
-members = [".", "mettgine"]
+members = [".", "mettgine", "mettgine/mpak", "mettgine/mettpack"]
 # `cargo test` prueft Spiel und Engine
-default-members = [".", "mettgine"]
+default-members = [".", "mettgine", "mettgine/mpak", "mettgine/mettpack"]
 
 [dependencies]
 mettgine = { path = "mettgine" }

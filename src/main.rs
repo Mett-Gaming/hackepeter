@@ -21,13 +21,14 @@ mod sounds;
 
 use app::App;
 use mettgine::app::AppConfig;
+use mettgine::asset::data;
 use mettgine::canvas::Canvas;
 use mettgine::text::FontAtlas;
 
 /// Version aus dem Git-Tag (build.rs), fuer Absturzberichte und Menue
 pub const VERSION: &str = env!("HACKEPETER_VERSION");
 const TITLE: &str = "HACKEPETER";
-static FONT: &[u8] = include_bytes!("../assets/fonts/ArchivoBlack-Regular.ttf");
+const FONT: &str = "fonts/ArchivoBlack-Regular.ttf";
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = AppConfig {
@@ -35,7 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ..AppConfig::new(settings::APP, TITLE, VERSION)
     };
     mettgine::app::run(config, || {
-        let font = FontAtlas::bake(FONT)?;
+        let font = FontAtlas::bake(&data::read(FONT))?;
         Ok(App::new(Canvas::new(font)))
     })
 }
@@ -46,7 +47,7 @@ mod tests {
 
     #[test]
     fn game_font_bakes_with_umlauts() {
-        let a = FontAtlas::bake(FONT).unwrap();
+        let a = FontAtlas::bake(&data::read(FONT)).unwrap();
         for c in ['A', 'z', '0', 'ä', 'Ö', 'ß', '!'] {
             let g = a.glyph(c);
             assert!(g.size[0] > 0.0 && g.advance > 0.0, "Zeichen fehlt: {c}");
