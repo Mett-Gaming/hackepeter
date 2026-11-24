@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "achievements": [
+    { "id": "erste_flucht", "name": "Frisch geklaut", "text": "Entkomm als Dieb zum ersten Mal." },
+    { "id": "fluchtkoenig", "name": "Fluchtkönig", "text": "Entkomm zehnmal.", "goal": 10 },
+    { "id": "erster_fang", "name": "Im Namen des Mettes", "text": "Fang den Dieb selbst." },
+    { "id": "dienst_nach_vorschrift", "name": "Dienst nach Vorschrift", "text": "Fang den Dieb zehnmal.", "goal": 10 },
+    { "id": "zwiebelkoenig", "name": "Zwiebelkönig", "text": "Sammle 100 Zwiebelringe in einer Runde." },
+    { "id": "zwiebelvorrat", "name": "Zwiebelvorrat", "text": "Sammle insgesamt 1.000 Zwiebelringe.", "goal": 1000 },
+    { "id": "abgehoben", "name": "Abgehoben", "text": "Flieg mit der Pfeffer-Rakete." },
+    { "id": "alles_drauf", "name": "Einmal mit allem", "text": "Nimm alle sechs Power-ups in einer Runde." },
+    { "id": "broetchen_panzer", "name": "Knusprige Rettung", "text": "Lass einen Crash vom Brötchen-Schild abfangen." },
+    { "id": "unberuehrt", "name": "Unberührt", "text": "Entkomm, ohne einmal anzuecken oder gebissen zu werden." },
+    { "id": "gemeinsam", "name": "Gemeinsam schmeckt es besser", "text": "Spiel eine Runde mit Freunden zu Ende." },
+    { "id": "haarscharf", "name": "Haarscharf", "text": "Entkomm, während ein Cop keine vier Meter hinter dir ist.", "hidden": true }
+  ]
+}

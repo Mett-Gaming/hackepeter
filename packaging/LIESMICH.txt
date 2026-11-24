@@ -16,6 +16,10 @@ ALLEIN ODER MIT FREUNDEN
   "Mit Freunden spielen", hosten und den Code weitergeben oder mit Code beitreten.
   Freie Plätze füllen Bots auf (Anzahl im Menü einstellbar).
 
+ERFOLGE
+  Über den Mett Launcher gestartet, sammelst du Erfolge. Umschalt+Tab (am Controller
+  Select und Start zusammen) öffnet das Overlay des Launchers.
+
 DER DIEB
   Renn 120 Sekunden lang, ohne dass dich ein Cop erwischt.
   Hindernisse: Absperrungen überspringen, unter Balken durchrutschen, Zügen und
