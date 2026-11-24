@@ -12,6 +12,7 @@ mod controls;
 mod game;
 mod hud;
 mod menus;
+mod modern;
 mod net;
 mod people;
 mod scene;

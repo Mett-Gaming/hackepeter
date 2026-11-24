@@ -14,6 +14,10 @@ use std::collections::HashMap;
 /// Sichtweite nach vorn und hinten (Meter)
 const VIEW_AHEAD: f32 = 170.0;
 const VIEW_BEHIND: f32 = 25.0;
+/// Bildwinkel (Radiant), nahe und ferne Grenze (Meter) der Kamera
+pub const FOV_Y: f32 = 65.0 * std::f32::consts::PI / 180.0;
+pub const NEAR: f32 = 0.1;
+pub const FAR: f32 = 400.0;
 /// Breite des Gehwegs (Meter)
 const SIDEWALK: f32 = 4.0;
 
@@ -76,8 +80,7 @@ impl Camera {
     }
 
     pub fn view_proj(&self, aspect: f32) -> Mat4 {
-        perspective(65f32.to_radians(), aspect, 0.1, 400.0)
-            * Mat4::look_at_rh(self.eye, self.target, Vec3::Y)
+        perspective(FOV_Y, aspect, NEAR, FAR) * Mat4::look_at_rh(self.eye, self.target, Vec3::Y)
     }
 }
 

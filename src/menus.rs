@@ -74,6 +74,14 @@ pub fn items(screen: Screen, s: &Settings, launcher: bool) -> Vec<(String, Actio
                 Action::Setting(3),
             ),
             (format!("Schatten: {}", on(s.shadows)), Action::Setting(4)),
+            (
+                format!("Moderne Grafik: {}", on(s.modern)),
+                Action::Setting(5),
+            ),
+            (
+                format!("Raytracing (ab Neustart): {}", on(s.raytracing)),
+                Action::Setting(6),
+            ),
             ("Zurück".into(), Action::Go(Screen::Main)),
         ],
         Screen::Paused => vec![
@@ -94,6 +102,8 @@ pub fn change_setting(s: &mut Settings, n: usize, dir: i32) {
         2 => s.render_scale = step(s.render_scale, 0.25).clamp(0.5, 1.5),
         3 => s.fullscreen = !s.fullscreen,
         4 => s.shadows = !s.shadows,
+        5 => s.modern = !s.modern,
+        6 => s.raytracing = !s.raytracing,
         _ => {}
     }
 }
@@ -130,6 +140,9 @@ mod tests {
         assert_eq!(s.render_scale, 0.5);
         change_setting(&mut s, 3, 1);
         assert!(s.fullscreen);
+        assert!(!s.modern && !s.raytracing, "Vorgabe: wie bisher");
+        change_setting(&mut s, 5, 1);
+        assert!(s.modern);
         assert!(items(Screen::Friends, &s, false)
             .iter()
             .all(|(_, a)| *a != Action::Host));

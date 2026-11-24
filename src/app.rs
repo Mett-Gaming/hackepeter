@@ -503,7 +503,12 @@ impl App {
                 self.item_rects = crate::hud::menu(c, &names, self.sel, &footer);
             }
         }
+        let st = &self.settings;
+        let rays = st.raytracing && stage.renderer.ray_tracing();
+        let modern = (st.modern)
+            .then(|| crate::modern::scene(&self.cam, aspect, &look, st.shadows, rays, dt));
         stage.draw(&FrameInput {
+            scene: modern.as_ref(),
             view: look.view,
             second_camera: None,
             time: self.time,
@@ -535,6 +540,7 @@ impl mettgine::app::Game for App {
         let f = &self.canvas.font;
         let config = Config {
             resolution: Resolution::Scale(self.settings.render_scale),
+            ray_tracing: self.settings.raytracing,
             ..Config::new(&meshes, &skins, (&f.pixels, f.width, f.height))
         };
         Renderer::new(window, &config)

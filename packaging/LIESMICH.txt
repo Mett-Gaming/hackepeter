@@ -52,6 +52,10 @@ STEUERUNG
   F11                            Vollbild
   Controller werden unterstützt (A springen, B rutschen, X/Y/RB Fähigkeiten).
 
+GRAFIK
+  In den Einstellungen gibt es "Moderne Grafik" (Vorgabe: aus) und dazu
+  "Raytracing" (wirkt ab dem nächsten Start, braucht eine passende Karte).
+
 EINSTELLUNGEN UND SPIELSTÄNDE
   Liegen in %APPDATA%\.mettlauncher\hackepeter (nicht neben der exe).
   Absturzberichte: %APPDATA%\.mettlauncher\hackepeter\logs

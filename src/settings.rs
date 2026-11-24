@@ -13,7 +13,9 @@ pub struct Settings {
     pub render_scale: f32,
     pub fullscreen: bool,
     pub shadows: bool,
-    /// Raytracing-Schatten (nur wenn die Grafikkarte es kann)
+    /// moderne Grafik (Materialien, Schattenstufen, Verdeckung, Ueberstrahlen)
+    pub modern: bool,
+    /// Raytracing in der modernen Grafik (nur wenn die Grafikkarte es kann, ab Neustart)
     pub raytracing: bool,
     /// Name im Einzelspieler (im Mehrspieler kommt er aus dem Launcher)
     pub name: String,
@@ -29,6 +31,7 @@ impl Default for Settings {
             render_scale: 1.0,
             fullscreen: false,
             shadows: true,
+            modern: false,
             raytracing: false,
             name: "Hackepeter".into(),
             bots: 3,
@@ -45,6 +48,7 @@ impl Settings {
             render_scale: kv.f32("render_scale", d.render_scale, 0.5, 1.5),
             fullscreen: kv.bool("fullscreen", d.fullscreen),
             shadows: kv.bool("shadows", d.shadows),
+            modern: kv.bool("modern", d.modern),
             raytracing: kv.bool("raytracing", d.raytracing),
             name: kv
                 .str("name")
@@ -62,6 +66,7 @@ impl Settings {
         kv.set("render_scale", self.render_scale);
         kv.set("fullscreen", self.fullscreen);
         kv.set("shadows", self.shadows);
+        kv.set("modern", self.modern);
         kv.set("raytracing", self.raytracing);
         kv.set("name", &self.name);
         kv.set("bots", self.bots);
@@ -89,6 +94,7 @@ mod tests {
             render_scale: 0.75,
             fullscreen: true,
             shadows: false,
+            modern: true,
             raytracing: true,
             name: "Mettwurst".into(),
             bots: 5,
