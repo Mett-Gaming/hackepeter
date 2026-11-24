@@ -47,6 +47,7 @@ pub fn scene(
                 occlusion: rays,
                 reflections: rays,
                 indirect: rays,
+                ..Default::default()
             },
             ..Features::default()
         },
