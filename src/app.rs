@@ -1,6 +1,5 @@
 //! Das Spiel als Ganzes: Bildschirme, Eingabe, Sitzung, Klang und Zeichnen pro Bild.
 
-use crate::achievements::Tracker;
 use crate::controls as k;
 use crate::game::cops::ABILITIES;
 use crate::game::mover::{Controls, MoveEvent};
@@ -15,7 +14,6 @@ use mettgine::audio::{Audio, Sound};
 use mettgine::canvas::Canvas;
 use mettgine::crash;
 use mettgine::input::{Bind, Input, MouseButton};
-use mettgine::launcher::Achievements;
 use mettgine::net::mett::{Launch, MettTransport};
 use mettgine::net::udp::UdpTransport;
 use mettgine::presence::Status;
@@ -51,9 +49,6 @@ pub struct App {
     /// Kurztest (HACKEPETER_SMOKE=Sekunden): direkt eine Einzelspieler-Runde, dann beenden
     smoke: Option<f32>,
     frames: u32,
-    tracker: Tracker,
-    /// fuer Erfolge; kommt mit dem Fenster
-    achievements: Achievements,
 }
 
 fn attract_round() -> Round {
@@ -98,8 +93,6 @@ impl App {
                 .ok()
                 .and_then(|s| s.parse().ok()),
             frames: 0,
-            tracker: Tracker::load(),
-            achievements: Achievements::default(),
             settings,
         };
         app.connect_from_start();
@@ -416,11 +409,6 @@ impl App {
         }
         let started = s.round.is_some();
         let me = s.my_id;
-        // Der Kurztest zaehlt nicht
-        if let (Some(r), None) = (&s.round, self.smoke) {
-            let humans = s.humans();
-            self.tracker.step(&ev, r, me, humans, &self.achievements);
-        }
         let countdown = s
             .round
             .as_ref()
@@ -563,8 +551,6 @@ impl mettgine::app::Game for App {
     }
 
     fn ready(&mut self, stage: &mut Stage) {
-        self.achievements = stage.achievements.clone();
-        self.tracker.report_totals(&self.achievements);
         self.sync(stage);
     }
 
