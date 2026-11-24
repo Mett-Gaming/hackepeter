@@ -145,12 +145,8 @@ pub fn lobby(c: &mut Canvas, s: &Session) {
 
 /// Weltpunkt auf die UI-Flaeche (None = hinter der Kamera).
 fn project(vp: &Mat4, p: Vec3, c: &Canvas) -> Option<(f32, f32)> {
-    let clip = *vp * p.extend(1.0);
-    if clip.w <= 0.1 {
-        return None;
-    }
-    let ndc = clip.truncate() / clip.w;
-    Some(((ndc.x * 0.5 + 0.5) * c.w, (ndc.y * 0.5 + 0.5) * c.h))
+    let at = mettgine::render::project(vp, p)?;
+    Some((at.x * c.w, at.y * c.h))
 }
 
 fn clock(t: f32) -> String {

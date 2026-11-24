@@ -9,37 +9,30 @@ use crate::net::session::Session;
 use crate::scene::{self, Animators, Camera};
 use crate::settings::Settings;
 use crate::sounds::{self, Sfx, ALL_SFX};
+use mettgine::app::Stage;
 use mettgine::audio::{Audio, Sound};
 use mettgine::canvas::Canvas;
 use mettgine::crash;
-use mettgine::input::Input;
+use mettgine::input::{Bind, Input, MouseButton};
 use mettgine::net::mett::{Launch, MettTransport};
 use mettgine::net::udp::UdpTransport;
-use mettgine::presence::{Presence, Status};
-use mettgine::render::{FrameInput, Renderer, UI_HEIGHT};
+use mettgine::presence::Status;
+use mettgine::render::{Config, FrameInput, Renderer, Resolution, UI_HEIGHT};
 use std::collections::HashMap;
-use winit::window::{Fullscreen, Window};
+use winit::event::WindowEvent;
+use winit::window::Window;
 
-/// Fenster und Renderer (erst nach `resumed` vorhanden).
-pub struct Running {
-    pub window: Window,
-    pub renderer: Renderer,
-}
+const CLICK: &[Bind] = &[Bind::Mouse(MouseButton::Left)];
 
 pub struct App {
-    pub settings: Settings,
-    pub input: Input,
+    settings: Settings,
     audio: Audio,
     sfx: HashMap<Sfx, Sound>,
     music: Sound,
-    pub running: Option<Running>,
-    pub canvas: Canvas,
-    pub screen: Screen,
+    canvas: Canvas,
+    screen: Screen,
     sel: usize,
     item_rects: Vec<[f32; 4]>,
-    /// Maus in UI-Einheiten
-    pub mouse: (f32, f32),
-    pub clicked: bool,
     session: Option<Session>,
     launcher: Option<MettTransport>,
     /// Meldung im Hauptmenue (z. B. "Verbindung verloren")
@@ -50,9 +43,9 @@ pub struct App {
     anims: Animators,
     time: f32,
     last_countdown: i32,
-    pub quit: bool,
-    crash_ctx_t: f32,
-    presence: Presence,
+    quit: bool,
+    /// Fenster muss noch an die Einstellungen angepasst werden
+    apply: bool,
     /// Kurztest (HACKEPETER_SMOKE=Sekunden): direkt eine Einzelspieler-Runde, dann beenden
     smoke: Option<f32>,
     frames: u32,
@@ -79,17 +72,13 @@ impl App {
         let audio = Audio::new(settings.volume, settings.music);
         let sfx = ALL_SFX.iter().map(|&s| (s, sounds::make(s))).collect();
         let mut app = Self {
-            input: Input::new(),
             audio,
             sfx,
             music: sounds::music(),
-            running: None,
             canvas: font,
             screen: Screen::Main,
             sel: 0,
             item_rects: Vec::new(),
-            mouse: (0.0, 0.0),
-            clicked: false,
             session: None,
             launcher: None,
             notice: None,
@@ -99,8 +88,7 @@ impl App {
             time: 0.0,
             last_countdown: 99,
             quit: false,
-            crash_ctx_t: 0.0,
-            presence: Presence::from_launcher(),
+            apply: true,
             smoke: std::env::var("HACKEPETER_SMOKE")
                 .ok()
                 .and_then(|s| s.parse().ok()),
@@ -161,16 +149,20 @@ impl App {
         }
     }
 
-    pub fn apply_settings(&mut self) {
+    fn apply_settings(&mut self) {
         self.audio
             .set_volumes(self.settings.volume, self.settings.music);
-        if let Some(r) = &mut self.running {
-            r.renderer.set_render_scale(self.settings.render_scale);
-            let want = self.settings.fullscreen;
-            if r.window.fullscreen().is_some() != want {
-                r.window
-                    .set_fullscreen(want.then_some(Fullscreen::Borderless(None)));
-            }
+        self.apply = true;
+    }
+
+    /// Geaenderte Einstellungen ans Fenster weitergeben.
+    fn sync(&mut self, stage: &mut Stage) {
+        if std::mem::take(&mut self.apply) {
+            stage.renderer.set_render_scale(self.settings.render_scale);
+            stage.set_fullscreen(self.settings.fullscreen);
+        }
+        if self.quit {
+            stage.quit();
         }
     }
 
@@ -222,31 +214,28 @@ impl App {
         self.play(Sfx::Select, 0.6);
     }
 
-    fn menu_input(&mut self) {
+    fn menu_input(&mut self, input: &Input, mouse: (f32, f32)) {
         let items = menus::items(self.screen, &self.settings, self.launcher.is_some());
         if items.is_empty() {
             return;
         }
         let n = items.len();
-        if self.input.pressed(k::UP) {
+        if input.pressed(k::UP) {
             self.sel = (self.sel + n - 1) % n;
             self.play(Sfx::Blip, 0.5);
         }
-        if self.input.pressed(k::DOWN) {
+        if input.pressed(k::DOWN) {
             self.sel = (self.sel + 1) % n;
             self.play(Sfx::Blip, 0.5);
         }
         // Maus: ueber einem Eintrag auswaehlen, Klick loest aus
         if let Some(i) = self.item_rects.iter().position(|r| {
-            self.mouse.0 >= r[0]
-                && self.mouse.0 <= r[0] + r[2]
-                && self.mouse.1 >= r[1]
-                && self.mouse.1 <= r[1] + r[3]
+            mouse.0 >= r[0] && mouse.0 <= r[0] + r[2] && mouse.1 >= r[1] && mouse.1 <= r[1] + r[3]
         }) {
             if i != self.sel && i < n {
                 self.sel = i;
             }
-            if self.clicked {
+            if input.pressed(CLICK) {
                 self.activate(items[self.sel.min(n - 1)].1, 1);
                 return;
             }
@@ -254,13 +243,13 @@ impl App {
         let sel = self.sel.min(n - 1);
         let act = items[sel].1;
         let adjustable = matches!(act, Action::Setting(_) | Action::Bots);
-        if adjustable && self.input.pressed(k::LEFT) {
+        if adjustable && input.pressed(k::LEFT) {
             self.activate(act, -1);
-        } else if adjustable && self.input.pressed(k::RIGHT) {
+        } else if adjustable && input.pressed(k::RIGHT) {
             self.activate(act, 1);
-        } else if self.input.pressed(k::CONFIRM) {
+        } else if input.pressed(k::CONFIRM) {
             self.activate(act, 1);
-        } else if self.input.pressed(k::BACK) {
+        } else if input.pressed(k::BACK) {
             let back = match self.screen {
                 Screen::Paused => Action::Resume,
                 Screen::Main => Action::None,
@@ -272,27 +261,27 @@ impl App {
         }
     }
 
-    fn lobby_input(&mut self) {
+    fn lobby_input(&mut self, input: &Input) {
         let Some(s) = self.session.as_mut() else {
             return;
         };
-        if self.input.pressed(k::BACK) {
+        if input.pressed(k::BACK) {
             self.leave_session();
             return;
         }
         if s.host {
-            if self.input.pressed(k::CONFIRM) {
+            if input.pressed(k::CONFIRM) {
                 if s.members.len() < 2 {
                     s.fill_to = 2;
                     s.fill_bots();
                 }
                 s.start_round();
             }
-            if self.input.pressed(k::LEFT) && s.fill_to > s.humans() {
+            if input.pressed(k::LEFT) && s.fill_to > s.humans() {
                 s.fill_to -= 1;
                 s.fill_bots();
             }
-            if self.input.pressed(k::RIGHT) && s.fill_to < crate::game::MAX_PLAYERS {
+            if input.pressed(k::RIGHT) && s.fill_to < crate::game::MAX_PLAYERS {
                 s.fill_to = s.fill_to.max(s.members.len()) + 1;
                 s.fill_bots();
             }
@@ -300,52 +289,46 @@ impl App {
     }
 
     /// Ein Bild: Eingabe, Spiel, Klang, Zeichnen.
-    pub fn frame(&mut self, dt: f32) {
+    fn run_frame(&mut self, stage: &mut Stage, dt: f32) {
         // Startbild der Engine: Eingaben verfallen, die Verbindung laeuft weiter
-        if self
-            .running
-            .as_ref()
-            .is_some_and(|r| r.renderer.splash_active())
-        {
-            self.input.release_all();
-            self.clicked = false;
-            self.update_session(dt);
-            self.render(dt);
+        if stage.splash_active() {
+            stage.input.release_all();
+            self.update_session(&stage.input, dt);
+            self.render(stage, dt);
             return;
         }
         self.time += dt;
-        if self.input.pressed(k::FULLSCREEN) {
+        if stage.input.pressed(k::FULLSCREEN) {
             self.settings.fullscreen = !self.settings.fullscreen;
             self.settings.save();
             self.apply_settings();
         }
         match self.screen {
-            Screen::Lobby => self.lobby_input(),
+            Screen::Lobby => self.lobby_input(&stage.input),
             Screen::Playing => {
-                if self.input.pressed(k::PAUSE) {
+                if stage.input.pressed(k::PAUSE) {
                     self.go(Screen::Paused);
                 }
             }
-            _ => self.menu_input(),
+            _ => self.menu_input(&stage.input, stage.cursor()),
         }
-        self.clicked = false;
-        self.update_session(dt);
-        self.update_crash_context(dt);
-        self.render(dt);
-        self.smoke_check();
+        self.update_session(&stage.input, dt);
+        self.sync(stage);
+        self.render(stage, dt);
+        self.smoke_check(stage);
     }
 
     /// Kurztest: nach der halben Zeit ein Bildschirmfoto (HACKEPETER_SHOT), am Ende Bildrate
     /// ins Protokoll und beenden.
-    fn smoke_check(&mut self) {
+    fn smoke_check(&mut self, stage: &mut Stage) {
         let Some(limit) = self.smoke else {
             return;
         };
         self.frames += 1;
         let half = self.time >= limit * 0.5 && self.time - 1.0 / 30.0 < limit * 0.5;
         if half {
-            if let (Ok(p), Some(r)) = (std::env::var("HACKEPETER_SHOT"), self.running.as_mut()) {
-                r.renderer.capture_next(p.into());
+            if let Ok(p) = std::env::var("HACKEPETER_SHOT") {
+                stage.renderer.capture_next(p.into());
             }
         }
         if self.time >= limit {
@@ -374,14 +357,14 @@ impl App {
         }
     }
 
-    fn update_session(&mut self, dt: f32) {
+    fn update_session(&mut self, input: &Input, dt: f32) {
         let playing = self.screen == Screen::Playing;
         let controls = if playing {
             Controls {
-                left: self.input.pressed(k::LEFT),
-                right: self.input.pressed(k::RIGHT),
-                jump: self.input.pressed(k::JUMP),
-                slide: self.input.pressed(k::SLIDE),
+                left: input.pressed(k::LEFT),
+                right: input.pressed(k::RIGHT),
+                jump: input.pressed(k::JUMP),
+                slide: input.pressed(k::SLIDE),
             }
         } else {
             Controls::default()
@@ -390,7 +373,7 @@ impl App {
             ABILITIES
                 .iter()
                 .zip(k::ABILITY)
-                .find(|(_, b)| self.input.pressed(b))
+                .find(|(_, b)| input.pressed(b))
                 .map(|(a, _)| *a)
         } else {
             None
@@ -471,55 +454,9 @@ impl App {
         }
     }
 
-    /// Was der Launcher in Discord zeigt (oeffentlich, keine Namen und keine Codes).
-    fn status(&self) -> Status {
-        let Some(s) = &self.session else {
-            return Status::new("Im Menü", "");
-        };
-        let details = match (self.screen, &s.round) {
-            (Screen::Playing | Screen::Paused, Some(r)) => {
-                match r.player(s.my_id).map(|p| p.role) {
-                    Some(crate::game::Role::Thief) => "Auf der Flucht als Dieb",
-                    Some(crate::game::Role::Cop) => "Jagt den Dieb fürs Ordnungsamt",
-                    None => "Schaut zu",
-                }
-            }
-            _ => "In der Lobby",
-        };
-        let humans = s.humans();
-        if humans > 1 || s.code.is_some() {
-            Status::new(details, "Mit Freunden").party(humans.max(1), crate::game::MAX_PLAYERS)
-        } else {
-            Status::new(details, "Solo")
-        }
-    }
-
-    fn update_crash_context(&mut self, dt: f32) {
-        self.crash_ctx_t -= dt;
-        if self.crash_ctx_t > 0.0 {
-            return;
-        }
-        self.crash_ctx_t = 1.0;
-        let status = self.status();
-        self.presence.set(status);
-        crash::context("Bildschirm", format!("{:?}", self.screen));
-        if let Some(s) = &self.session {
-            crash::context("Spieler", s.members.len().to_string());
-            crash::context("Host", s.host.to_string());
-            if let Some(r) = &s.round {
-                crash::context("Seed", r.track.seed.to_string());
-                crash::context("Rundenzeit", format!("{:.1}", r.time));
-            }
-        }
-        crash::context("Bild", format!("{:.1} ms", dt * 1000.0));
-    }
-
-    fn render(&mut self, dt: f32) {
-        let Some(run) = self.running.as_mut() else {
-            return;
-        };
-        let aspect = run.renderer.aspect();
-        self.canvas.begin(run.renderer.ui_width(), UI_HEIGHT);
+    fn render(&mut self, stage: &mut Stage, dt: f32) {
+        let aspect = stage.renderer.aspect();
+        self.canvas.begin(stage.renderer.ui_width(), UI_HEIGHT);
         let (round, me) = match &self.session {
             Some(s) if s.round.is_some() => (s.round.as_ref().unwrap(), s.my_id),
             _ => (&self.attract, 100),
@@ -532,7 +469,7 @@ impl App {
         match self.screen {
             Screen::Playing => {
                 if let Some(s) = &self.session {
-                    crate::hud::ingame(c, s, &look.view.view_proj, self.input.using_pad);
+                    crate::hud::ingame(c, s, &look.view.view_proj, stage.input.using_pad);
                 }
             }
             Screen::Lobby => {
@@ -560,13 +497,13 @@ impl App {
                 };
                 if screen == Screen::Paused {
                     if let Some(s) = &self.session {
-                        crate::hud::ingame(c, s, &look.view.view_proj, self.input.using_pad);
+                        crate::hud::ingame(c, s, &look.view.view_proj, stage.input.using_pad);
                     }
                 }
                 self.item_rects = crate::hud::menu(c, &names, self.sel, &footer);
             }
         }
-        if let Err(e) = run.renderer.draw(&FrameInput {
+        stage.draw(&FrameInput {
             view: look.view,
             second_camera: None,
             time: self.time,
@@ -578,22 +515,77 @@ impl App {
             camera_skins: &[],
             bones: &frame.bones,
             ui: &self.canvas.verts,
-        }) {
-            crash::fatal(
-                "Zeichnen",
-                &format!("Bild konnte nicht gezeichnet werden: {e}"),
-                "Die Grafik ist ausgefallen. Bitte den Grafiktreiber aktualisieren.",
-            );
-            self.quit = true;
-        }
+        });
     }
 
     /// Fokus verloren: im Spiel pausieren, Tasten loslassen.
-    pub fn focus_lost(&mut self) {
-        self.input.release_all();
+    fn focus_lost(&mut self) {
         // Kurztest: Fenster startet evtl. ohne Fokus, trotzdem weiterspielen
         if self.screen == Screen::Playing && self.smoke.is_none() {
             self.go(Screen::Paused);
         }
+    }
+}
+
+impl mettgine::app::Game for App {
+    fn renderer(&mut self, window: &Window) -> mettgine::app::Result<Renderer> {
+        let meshes = crate::assets::load_all();
+        let skins = crate::people::load_skins();
+        let f = &self.canvas.font;
+        let config = Config {
+            resolution: Resolution::Scale(self.settings.render_scale),
+            ..Config::new(&meshes, &skins, (&f.pixels, f.width, f.height))
+        };
+        Renderer::new(window, &config)
+    }
+
+    fn ready(&mut self, stage: &mut Stage) {
+        self.sync(stage);
+    }
+
+    fn frame(&mut self, stage: &mut Stage, dt: f32) {
+        self.run_frame(stage, dt);
+        self.sync(stage);
+    }
+
+    fn event(&mut self, _stage: &mut Stage, event: &WindowEvent) {
+        if let WindowEvent::Focused(false) = event {
+            self.focus_lost();
+        }
+    }
+
+    fn crash_context(&self) {
+        crash::context("Bildschirm", format!("{:?}", self.screen));
+        if let Some(s) = &self.session {
+            crash::context("Spieler", s.members.len().to_string());
+            crash::context("Host", s.host.to_string());
+            if let Some(r) = &s.round {
+                crash::context("Seed", r.track.seed.to_string());
+                crash::context("Rundenzeit", format!("{:.1}", r.time));
+            }
+        }
+    }
+
+    /// Was der Launcher in Discord zeigt (oeffentlich, keine Namen und keine Codes).
+    fn status(&self) -> Option<Status> {
+        let Some(s) = &self.session else {
+            return Some(Status::new("Im Menü", ""));
+        };
+        let details = match (self.screen, &s.round) {
+            (Screen::Playing | Screen::Paused, Some(r)) => {
+                match r.player(s.my_id).map(|p| p.role) {
+                    Some(crate::game::Role::Thief) => "Auf der Flucht als Dieb",
+                    Some(crate::game::Role::Cop) => "Jagt den Dieb fürs Ordnungsamt",
+                    None => "Schaut zu",
+                }
+            }
+            _ => "In der Lobby",
+        };
+        let humans = s.humans();
+        Some(if humans > 1 || s.code.is_some() {
+            Status::new(details, "Mit Freunden").party(humans.max(1), crate::game::MAX_PLAYERS)
+        } else {
+            Status::new(details, "Solo")
+        })
     }
 }

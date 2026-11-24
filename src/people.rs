@@ -178,15 +178,18 @@ pub fn anims(female: bool) -> &'static AnimSet {
     static M: OnceLock<AnimSet> = OnceLock::new();
     static F: OnceLock<AnimSet> = OnceLock::new();
     if female {
-        F.get_or_init(|| parse_anim(ANIM_F))
+        F.get_or_init(|| parse_anim(ANIM_F).expect("eingebaute Animation defekt"))
     } else {
-        M.get_or_init(|| parse_anim(ANIM_M))
+        M.get_or_init(|| parse_anim(ANIM_M).expect("eingebaute Animation defekt"))
     }
 }
 
 /// Alle Figuren, Index = Variante.
 pub fn load_skins() -> Vec<SkinData> {
-    PEOPLE.iter().map(|p| parse_skin(p.3)).collect()
+    PEOPLE
+        .iter()
+        .map(|p| parse_skin(p.3).expect("eingebaute Figur defekt"))
+        .collect()
 }
 
 /// Laufgeschwindigkeit, zu der die Rennanimation in Echtzeit passt (m/s); schnellere Figuren
